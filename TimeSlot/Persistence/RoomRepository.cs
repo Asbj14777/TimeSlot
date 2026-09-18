@@ -27,7 +27,7 @@ namespace TimeSlot.Persistence
             if (room != null)
             {
                 _context.Rooms.Remove(room);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
