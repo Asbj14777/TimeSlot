@@ -25,7 +25,7 @@ namespace TimeSlot.Services
             return bookingRepository.GetAll();
         }
 
-        public void Add(Booking booking)
+        public async Task Add(Booking booking)
         {
             if (booking.EndTime <= booking.StartTime)
             {
@@ -55,10 +55,10 @@ namespace TimeSlot.Services
                 }
             }
 
-            bookingRepository.Add(booking);
+            await bookingRepository.Add(booking);
         }
 
-        public void Update(Booking booking)
+        public async Task Update(Booking booking)
         {
             if (booking.EndTime <= booking.StartTime)
             {
@@ -93,10 +93,10 @@ namespace TimeSlot.Services
                 }
             }
 
-            bookingRepository.Update(booking);
+            await bookingRepository.Update(booking);
         }
 
-        public void Delete(int id)
+        public async Task Delete(int id)
         {
             var booking = bookingRepository.GetById(id);
 
@@ -105,7 +105,7 @@ namespace TimeSlot.Services
                 throw new Exception("Booking not found.");
             }
 
-            bookingRepository.Delete(id);
+            await bookingRepository.Delete(id);
         }
     }
 }

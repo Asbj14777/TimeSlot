@@ -14,13 +14,13 @@ namespace TimeSlot.Persistence
             _context = context;
         }
 
-        public async void Add(Booking booking)
+        public async Task Add(Booking booking)
         {
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
         }
 
-        public async void Delete(int id)
+        public async Task Delete(int id)
         {
             var booking = _context.Bookings.FirstOrDefault(x => x.BookingId == id);
             if (booking != null)
@@ -46,7 +46,7 @@ namespace TimeSlot.Persistence
                 .FirstOrDefault(b => b.BookingId == id);
         }
 
-        public async void Update(Booking booking)
+        public async Task Update(Booking booking)
         {
             _context.Bookings.Update(booking);
             await _context.SaveChangesAsync();

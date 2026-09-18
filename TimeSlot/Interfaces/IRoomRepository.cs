@@ -4,11 +4,11 @@ namespace TimeSlot.Interfaces
 {
     public interface IRoomRepository
     {
-        void Add(Room room);
-        void Delete(int id);
+        Task Add(Room room);
+        Task Delete(int id);
         List<Room> GetAll();
         Room? GetById(int id);
-        void Update(Room room);
+        Task Update(Room room);
     }
 
 }
