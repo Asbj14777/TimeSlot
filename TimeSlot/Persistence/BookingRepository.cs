@@ -14,19 +14,19 @@ namespace TimeSlot.Persistence
             _context = context;
         }
 
-        public void Add(Booking booking)
+        public async void Add(Booking booking)
         {
             _context.Bookings.Add(booking);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(int id)
+        public async void Delete(int id)
         {
             var booking = _context.Bookings.FirstOrDefault(x => x.BookingId == id);
             if (booking != null)
             {
                 _context.Bookings.Remove(booking);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -46,10 +46,10 @@ namespace TimeSlot.Persistence
                 .FirstOrDefault(b => b.BookingId == id);
         }
 
-        public void Update(Booking booking)
+        public async void Update(Booking booking)
         {
             _context.Bookings.Update(booking);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

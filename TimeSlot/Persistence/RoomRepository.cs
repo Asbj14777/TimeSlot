@@ -14,13 +14,13 @@ namespace TimeSlot.Persistence
             _context = context;
         }
 
-        public void Add(Room room)
+        public async void Add(Room room)
         {
             _context.Rooms.Add(room);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(int id)
+        public async void Delete(int id)
         {
             var room = _context.Rooms.FirstOrDefault(x => x.RoomId == id);
 
@@ -43,10 +43,10 @@ namespace TimeSlot.Persistence
                 .FirstOrDefault(r => r.RoomId == id);
         }
 
-        public void Update(Room room)
+        public async void Update(Room room)
         {
             _context.Rooms.Update(room);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }
