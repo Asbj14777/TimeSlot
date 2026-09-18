@@ -1,17 +1,18 @@
-﻿@model BookingViewModel
+@model BookingViewModel
 
 @{
     string action = ViewBag.Action ?? string.Empty;
 }
 
 <div class="container my-4">
-
-
     <form method="post" asp-controller="Bookings" asp-action="@action" class="mt-4">
         @if (action == "edit")
         {
             <input type="hidden" asp-for="Booking.BookingId" />
+            <input type="hidden" asp-for="Booking.RowVersion" />
         }
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
         <div class="mb-3">
             <label asp-for="Booking.Title" class="form-label"></label>
@@ -33,7 +34,9 @@
 
         <div class="mb-3">
             <label asp-for="Booking.RoomId" class="form-label"></label>
-            <select asp-for="Booking.RoomId" asp-items="@(new SelectList(Model.Rooms, "RoomId", "Name", Model.Booking?.RoomId))" class="form-select">
+            <select asp-for="Booking.RoomId"
+                    asp-items="@(new SelectList(Model.Rooms, "RoomId", "Name", Model.Booking?.RoomId))"
+                    class="form-select">
                 <option>- Please Select -</option>
             </select>
             <span asp-validation-for="Booking.RoomId" class="text-danger"></span>

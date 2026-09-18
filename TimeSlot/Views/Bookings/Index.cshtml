@@ -1,5 +1,4 @@
-﻿@model List<Booking>
-
+@model List<Booking>
 
 <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
     <h1 class="mb-0">Bookings:</h1>
@@ -7,7 +6,6 @@
 </div>
 
 <div class="d-flex flex-wrap gap-3">
-
     <table class="table table-striped">
         <thead>
             <tr>
@@ -15,6 +13,7 @@
                 <th scope="col">Start</th>
                 <th scope="col">End</th>
                 <th scope="col">Room</th>
+                <th scope="col">Booked by</th>
                 <th scope="col"></th>
             </tr>
         </thead>
@@ -26,6 +25,7 @@
                     <td>@booking.StartTime</td>
                     <td>@booking.EndTime</td>
                     <td>@booking.Room.Name</td>
+                    <td>@(booking.User?.Email ?? "Unknown")</td>
                     <td>
                         <a asp-controller="Bookings" asp-action="Edit" asp-route-id="@booking.BookingId" class="btn btn-link">Edit</a>
                         <a asp-controller="Bookings" asp-action="Delete" asp-route-id="@booking.BookingId" class="btn btn-link">Delete</a>

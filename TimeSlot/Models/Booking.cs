@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
+using TimeSlot.Data;
 
 namespace TimeSlot.Models
 {
     public class Booking
     {
         public int BookingId { get; set; }
+
         [Required]
         public string Title { get; set; } = string.Empty;
 
@@ -15,9 +17,6 @@ namespace TimeSlot.Models
 
         [Required]
         public DateTime EndTime { get; set; }
-
-
-
 
         [Required]
         [Display(Name = "Room")]
@@ -28,5 +27,12 @@ namespace TimeSlot.Models
         public Room Room { get; set; } = null!;
 
         public string? UserId { get; set; }
+
+        [ValidateNever]
+        [BindNever]
+        public ApplicationUser? User { get; set; }
+
+        [Timestamp]
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
     }
 }

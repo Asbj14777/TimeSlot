@@ -232,14 +232,17 @@ namespace TimeSlot.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookingId"));
 
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("RoomId")
                         .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
@@ -249,33 +252,15 @@ namespace TimeSlot.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("BookingId");
 
-                    b.HasIndex("ApplicationUserId");
-
                     b.HasIndex("RoomId");
 
-                    b.ToTable("Bookings");
+                    b.HasIndex("UserId");
 
-                    b.HasData(
-                        new
-                        {
-                            BookingId = 1,
-                            EndTime = new DateTime(2026, 9, 8, 11, 0, 0, 0, DateTimeKind.Unspecified),
-                            RoomId = 1,
-                            StartTime = new DateTime(2026, 9, 8, 10, 0, 0, 0, DateTimeKind.Unspecified),
-                            Title = "Projektmøde"
-                        },
-                        new
-                        {
-                            BookingId = 2,
-                            EndTime = new DateTime(2026, 9, 8, 13, 0, 0, 0, DateTimeKind.Unspecified),
-                            RoomId = 2,
-                            StartTime = new DateTime(2026, 9, 8, 12, 0, 0, 0, DateTimeKind.Unspecified),
-                            Title = "Gruppemøde"
-                        });
+                    b.ToTable("Bookings");
                 });
 
             modelBuilder.Entity("TimeSlot.Models.Room", b =>
@@ -365,17 +350,19 @@ namespace TimeSlot.Migrations
 
             modelBuilder.Entity("TimeSlot.Models.Booking", b =>
                 {
-                    b.HasOne("TimeSlot.Data.ApplicationUser", null)
-                        .WithMany("Bookings")
-                        .HasForeignKey("ApplicationUserId");
-
                     b.HasOne("TimeSlot.Models.Room", "Room")
                         .WithMany("Bookings")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TimeSlot.Data.ApplicationUser", "User")
+                        .WithMany("Bookings")
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Room");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TimeSlot.Data.ApplicationUser", b =>

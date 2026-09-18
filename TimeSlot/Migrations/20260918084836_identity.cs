@@ -182,15 +182,15 @@ namespace TimeSlot.Migrations
                     StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RoomId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Bookings", x => x.BookingId);
                     table.ForeignKey(
-                        name: "FK_Bookings_AspNetUsers_ApplicationUserId",
-                        column: x => x.ApplicationUserId,
+                        name: "FK_Bookings_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -208,15 +208,6 @@ namespace TimeSlot.Migrations
                 {
                     { 1, 10, "Mødelokale 1" },
                     { 2, 20, "Mødelokale 2" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Bookings",
-                columns: new[] { "BookingId", "ApplicationUserId", "EndTime", "RoomId", "StartTime", "Title", "UserId" },
-                values: new object[,]
-                {
-                    { 1, null, new DateTime(2026, 9, 8, 11, 0, 0, 0, DateTimeKind.Unspecified), 1, new DateTime(2026, 9, 8, 10, 0, 0, 0, DateTimeKind.Unspecified), "Projektmøde", null },
-                    { 2, null, new DateTime(2026, 9, 8, 13, 0, 0, 0, DateTimeKind.Unspecified), 2, new DateTime(2026, 9, 8, 12, 0, 0, 0, DateTimeKind.Unspecified), "Gruppemøde", null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -259,14 +250,14 @@ namespace TimeSlot.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bookings_ApplicationUserId",
-                table: "Bookings",
-                column: "ApplicationUserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Bookings_RoomId",
                 table: "Bookings",
                 column: "RoomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bookings_UserId",
+                table: "Bookings",
+                column: "UserId");
         }
 
         /// <inheritdoc />

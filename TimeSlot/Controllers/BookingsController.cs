@@ -1,36 +1,43 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.EntityFrameworkCore;
 using TimeSlot.Data;
 using TimeSlot.Interfaces;
-
 using TimeSlot.Models;
 using TimeSlot.ViewModels;
 
 namespace TimeSlot.Controllers
 {
-
+    [Authorize]
     public class BookingsController : Controller
     {
         private readonly IRoomRepository roomRepository;
         private readonly IBookingService bookingService;
-        private readonly UserManager<ApplicationUser> _userManager; 
+        private readonly UserManager<ApplicationUser> _userManager;
+
         public BookingsController(
             IRoomRepository roomRepository,
-            IBookingService bookingService, UserManager<ApplicationUser> userManager)
+            IBookingService bookingService,
+            UserManager<ApplicationUser> userManager)
         {
             this.roomRepository = roomRepository;
             this.bookingService = bookingService;
-            _userManager = userManager; 
+            _userManager = userManager;
         }
 
-       
         public IActionResult Index()
         {
-            var bookings = bookingService.GetAll();
+            var bookings = bookingService.GetAll()
+                .Where(b => b.StartTime > DateTime.Now);
 
-            return View(bookings);
+            if (!User.IsInRole("Admin"))
+            {
+                var userId = _userManager.GetUserId(User);
+                bookings = bookings.Where(b => b.UserId == userId);
+            }
+
+            return View(bookings.OrderBy(b => b.StartTime).ToList());
         }
 
         public IActionResult Add(int? id)
@@ -43,19 +50,10 @@ namespace TimeSlot.Controllers
             };
 
             var date = DateTime.Now;
-
             bookingVM.Booking.StartTime = new DateTime(
-                date.Year,
-                date.Month,
-                date.Day,
-                date.Hour,
-                date.Minute,
-                0);
+                date.Year, date.Month, date.Day, date.Hour, date.Minute, 0);
+            bookingVM.Booking.EndTime = bookingVM.Booking.StartTime.AddHours(1);
 
-            bookingVM.Booking.EndTime =
-                bookingVM.Booking.StartTime.AddHours(1);
-
-            // If a room was selected beforehand
             if (id != null)
             {
                 bookingVM.Booking.RoomId = id.Value;
@@ -73,22 +71,19 @@ namespace TimeSlot.Controllers
             if (!ModelState.IsValid)
             {
                 bookingVM.Rooms = roomRepository.GetAll();
-
                 return View(bookingVM);
             }
 
             try
             {
+                bookingVM.Booking.UserId = _userManager.GetUserId(User);
                 bookingService.Add(bookingVM.Booking);
-
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-
                 bookingVM.Rooms = roomRepository.GetAll();
-
                 return View(bookingVM);
             }
         }
@@ -101,10 +96,14 @@ namespace TimeSlot.Controllers
             }
 
             var booking = bookingService.GetById(id.Value);
-
             if (booking == null)
             {
                 return NotFound();
+            }
+
+            if (!CanManageBooking(booking))
+            {
+                return Forbid();
             }
 
             var bookingVM = new BookingViewModel
@@ -114,54 +113,86 @@ namespace TimeSlot.Controllers
             };
 
             ViewBag.Action = "edit";
-
             return View(bookingVM);
         }
 
-        // POST: Bookings/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(BookingViewModel bookingVM)
         {
             ViewBag.Action = "edit";
 
+            var existingBooking = bookingService.GetById(bookingVM.Booking.BookingId);
+            if (existingBooking == null)
+            {
+                return NotFound();
+            }
+
+            if (!CanManageBooking(existingBooking))
+            {
+                return Forbid();
+            }
+
+            // The owner is taken from the database, never from posted form data.
+            bookingVM.Booking.UserId = existingBooking.UserId;
+
             if (!ModelState.IsValid)
             {
                 bookingVM.Rooms = roomRepository.GetAll();
-
                 return View(bookingVM);
             }
 
             try
             {
                 bookingService.Update(bookingVM.Booking);
-
                 return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                ModelState.AddModelError(
+                    "",
+                    "This booking was changed by another user. Please review the booking and try again.");
+
+                bookingVM.Rooms = roomRepository.GetAll();
+                return View(bookingVM);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-
                 bookingVM.Rooms = roomRepository.GetAll();
-
                 return View(bookingVM);
             }
         }
 
         public IActionResult Delete(int id)
         {
+            var booking = bookingService.GetById(id);
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            if (!CanManageBooking(booking))
+            {
+                return Forbid();
+            }
+
             try
             {
                 bookingService.Delete(id);
-
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-
                 return RedirectToAction(nameof(Index));
             }
+        }
+
+        private bool CanManageBooking(Booking booking)
+        {
+            return User.IsInRole("Admin") ||
+                   booking.UserId == _userManager.GetUserId(User);
         }
     }
 }
